@@ -1,7 +1,6 @@
 # Ansible Role: Jenkins Master local agent
 
-[![Build Status](https://img.shields.io/travis/yourusername/ansible-role-jenkins-master/main.svg)](https://travis-ci.org/yourusername/ansible-role-jenkins-master)
-
+[![CI](https://github.com/hax0sen/ansible-role-jenkins-master-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/hax0sen/ansible-role-jenkins-master-agent/actions/workflows/ci.yml)
 ## Overview
 
 The Ansible role `ansible-role-jenkins-master` automates the installation and configuration of a Jenkins master within a Docker container. This role sets up a minimal Jenkins master with basic configuration, utilizing a Jenkins Agent on the same VM (acting as a local Jenkins agent).
