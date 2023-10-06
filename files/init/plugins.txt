@@ -16,5 +16,3 @@ job-import-plugin:3.6
 sonar:2.15
 blueocean:1.27.1
 role-strategy:689.v731678c3e0eb_
-nested-view:1.29
-sectioned-view:1.25
