@@ -1,0 +1,14 @@
+{{ ansible_managed | comment }}
+
+[Unit]
+Description=Jenkins Agent
+After=Network-online.target
+
+[Service]
+User=jenkins
+WorkingDirectory=/var/shared
+ExecStart=/bin/bash /var/shared/jenkins-agent.sh
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

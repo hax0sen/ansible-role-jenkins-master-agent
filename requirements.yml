@@ -1,0 +1,6 @@
+---
+roles:
+  - src: haxorof.docker_ce
+  - src: https://github.com/hax0sen/ansible-role-openjdk
+collections:
+  - name: ansible.posix

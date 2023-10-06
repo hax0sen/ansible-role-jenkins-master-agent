@@ -1,0 +1,51 @@
+---
+- name: Setup jenkins master with local Jenkins
+  hosts: docker
+  vars:
+  # Docker vars
+    docker_compose: true
+    docker_compose_no_pip: true
+    docker_compose_no_pip_detect_version: false
+    docker_daemon_config:
+      log-driver: json-file
+      log-opts:
+        max-size: 10m
+        max-file: "3"
+    docker_users:
+      - jenkins
+    jenkins_agent_java:
+      - release: jdk-17.0.8.1+1"
+    # Set this if you will run java on Jenkins Agent
+        path: "/opt/java/17/jdk-17.0.8.1-1"
+    # Set system user to run jenkins master service
+    jenkins_master_system_user: jenkins
+    # Set this to true if you want to use caddy as reverse proxy(default false)
+    jenkins_master_caddy: false
+    # Jenkins master fresh (first setup for install plugins form list) default is false
+    jenkins_master_fresh: false
+    # Jenkins master Admin password
+    jenkins_master_password: ''
+    # Jenkins master url/ip #example http://192.168.1.66:8080
+    jenkins_master_url: '' 
+    # Jenkins master version https://hub.docker.com/r/jenkins/jenkins/tags
+    jenkins_master_version: 'jenkins:lts-jdk11'
+    # Jenkins master set system message 
+    jenkins_master_system_message: "test jenkins 5"
+    # Jenkins master location
+    jenkins_master_location: /home/{{ jenkins_master_system_user }}
+    # Jenkins master init location
+    jenkins_master_location_init: /home/{{ jenkins_master_system_user }}/init
+    # Jenkins master env location
+    jenkins_master_location_env: /home/{{ jenkins_master_system_user }}/env
+    # Jenkins master backup location
+    jenkins_master_backup_location: /var/jenkins-backup
+    # Jenkins master sourcecode key phrase
+    jenkins_master_git__key_phase: ''
+    # Jenkins agent private key for clone sourcecode
+    jenkins_agent_master_ssh_private_key: ""
+    # Jenkins agent public key
+    jenkins_agent_master_ssh_public_key: ""
+    # Jenkins agent java version
+  roles:
+    - haxorof.docker_ce
+    - ansible-role-jenkins-master-agent

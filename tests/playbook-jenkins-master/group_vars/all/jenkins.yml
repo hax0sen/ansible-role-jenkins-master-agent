@@ -1,0 +1,30 @@
+---
+# Set system user to run jenkins master service
+jenkins_master_system_user: jenkins
+# Set this to true if you want to use caddy as reverse proxy, default true
+jenkins_master_caddy: true
+# Jenkins master fresh (first setup for install plugins form list), default is true
+jenkins_master_fresh: true
+# Jenkins master Admin password
+jenkins_master_password: 'testing'
+# Jenkins master url/ip #example http://192.168.1.66:8080
+jenkins_master_url: '' 
+# Jenkins master version https://hub.docker.com/r/jenkins/jenkins/tags
+jenkins_master_version: 'jenkins:lts-jdk11'
+# Jenkins master set system message 
+jenkins_master_system_message: "Welcome to Jenkins"
+# Jenkins master location
+jenkins_master_location: /home/{{ jenkins_master_system_user }}
+# Jenkins master init location
+jenkins_master_location_init: /home/{{ jenkins_master_system_user }}/init
+# Jenkins master env location
+jenkins_master_location_env: /home/{{ jenkins_master_system_user }}/env
+# Jenkins master backup location
+jenkins_master_backup_location: /var/jenkins-backup
+# Jenkins master sourcecode key phrase
+jenkins_master_git__key_phase: ''
+# Jenkins agent private key for clone sourcecode
+jenkins_agent_master_ssh_private_key: ""
+# Jenkins agent public key
+jenkins_agent_master_ssh_public_key: ""
+

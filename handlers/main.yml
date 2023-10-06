@@ -1,0 +1,13 @@
+---
+- name: Restart containers
+  become: true
+  ansible.builtin.command: docker-compose down && sleep 5 && docker-compose up -d
+  args:
+    chdir: "{{ jenkins_master_location }}"
+
+- name: Restart jenkins_agent
+  become: true
+  ansible.builtin.systemd:
+    name: jenkins_agent
+    daemon-reload: true
+    state: restarted

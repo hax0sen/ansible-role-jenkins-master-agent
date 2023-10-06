@@ -1,0 +1,29 @@
+x-jenkins-linux-node: &jenkins_linux_node_anchor
+  remoteFS: "/home/jenkins/jenkins-agent"
+  labelString: "docker"
+  nodeDescription: "Jenkins agent"
+  mode: EXCLUSIVE
+  retentionStrategy: "always"
+  nodeProperties:
+  - envVars:
+      env:
+      - key: "Test_var1"
+        value: "TEST_VAR1"
+  - toolLocation:
+      locations:
+      - home: "/home/jenkins"
+        key: "hudson.model.JDK$DescriptorImpl@null"
+jenkins:
+  nodes:
+{% for agent in jenkins_agents %}
+  - permanent:
+      name: {{ agent.name }}
+      launcher:
+        ssh:
+          credentialsId: "{{ jenkins_agents_id }}"
+          port: 22
+          host: {{ agent.host }}
+          sshHostKeyVerificationStrategy: "nonVerifyingKeyVerificationStrategy"
+      numExecutors: {{ agent.executors }}
+      <<: *jenkins_linux_node_anchor
+{% endfor %}

@@ -1,0 +1,15 @@
+galaxy_info:
+  author: Hax0sen
+  role_name: jenkins
+  namespace: hax0sen
+  description: Jenkins master with local agent
+  company: none
+  license: MIT
+  min_ansible_version: "2.12"
+  galaxy_tags:
+    - jenkins
+    - master
+    - agent
+    - configurationascode
+    - system
+dependencies: []

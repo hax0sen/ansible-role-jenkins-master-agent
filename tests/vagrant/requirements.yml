@@ -1,0 +1,11 @@
+---
+roles:
+#  - src: ayltai.adoptopenjdk
+  - src: haxorof.docker_ce
+  - src: https://github.com/hax0sen/ansible-role-openjdk
+  - src: https://github.com/hax0sen/ansible-role-jenkins-master-agent
+
+collections:
+  - name: ansible.posix
+
+

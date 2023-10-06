@@ -1,0 +1,7 @@
+---
+ansible_connection: ssh
+# Set your SSH user
+ansible_ssh_user: ansible-user
+# Set password
+ansible_ssh_pass: ansible-user-passwd
+ansible_become_pass: ansible-user-passwd

@@ -1,0 +1,13 @@
+---
+# Docker variables 
+docker_compose: true
+docker_setup_repos: true
+docker_compose_no_pip: true
+docker_compose_no_pip_detect_version: false
+docker_daemon_config:
+  log-driver: json-file
+  log-opts:
+    max-size: 10m
+    max-file: "3"
+docker_users:
+  - jenkins

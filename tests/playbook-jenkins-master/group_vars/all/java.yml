@@ -1,0 +1,5 @@
+---
+jenkins_agent_java:
+  - release: jdk-17.0.8.1+1"
+# Set this if you will run java on Jenkins Agent
+    path: "/opt/java/17/jdk-17.0.8.1-1"

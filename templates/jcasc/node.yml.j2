@@ -1,0 +1,25 @@
+jenkins:
+  nodes:
+  - permanent:
+      labelString: "docker java"
+      name: local
+      nodeDescription: "local agent"
+      launcher:
+        inbound:
+          websocket: true
+          workDirSettings: 
+            disabled: false
+            failIfWorkDirIsMissing: false
+            internalDir: "remoting"
+      numExecutors: 2
+      nodeProperties:
+      - envVars:
+          env:
+          - key: "Test_var1"
+            value: "TEST_VAR1"
+      - toolLocation:
+          locations:
+          - home: "/opt/java/17/jdk-17.0.8.1-1"
+            key: "hudson.model.JDK$DescriptorImpl@openJDK"
+      retentionStrategy: "always"
+      remoteFS: "/var/shared"

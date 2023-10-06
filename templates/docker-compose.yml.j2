@@ -1,0 +1,37 @@
+version: "3.8"
+services:
+  jenkins:
+    image: jenkins/{{ jenkins_master_version }}
+    hostname: jenkins
+    container_name: jenkins
+    restart: unless-stopped
+    privileged: true 
+    ports:
+      - "8080:8080"
+    env_file: env/jenkins.env
+    volumes:
+      - ${PWD}/init:/var/jenkins_init
+      - jenkins-data:/var/jenkins_home:z
+      - jenkins-backup:/var/jenkins_backup:z
+    entrypoint:
+      - /usr/bin/tini
+      - "--"
+      - /var/jenkins_init/entrypoint_init.sh
+{% if jenkins_master_caddy == true %}
+  caddy:
+    image: caddy:latest
+    hostname: caddy
+    container_name: caddy
+    restart: unless-stopped
+    privileged: true 
+    ports:
+      - "80:80" # For HTTP -> HTTPS redirects
+      - "443:443"
+    volumes:
+      - /home/{{ jenkins_master_system_user }}/Caddyfile:/etc/caddy/Caddyfile
+{% endif %}
+volumes:
+  jenkins-data:
+    driver: local
+  jenkins-backup:
+    driver: local

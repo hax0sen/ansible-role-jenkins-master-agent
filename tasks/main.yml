@@ -1,0 +1,176 @@
+---
+- name: Get IP address and filter out docker network if jenkins_master_url is not set
+  ansible.builtin.set_fact:
+    _jenkins_master_url: "{{ ansible_all_ipv4_addresses | reject('match', '^172\\.|^10\\.') | reject('match', '^\\s*$') | list | join(', ') }}"
+  when: 
+    - ansible_all_ipv4_addresses is defined
+    - jenkins_master_url is not defined or jenkins_master_url == ''
+
+- name: Fail if defined jenkins master user is missing
+  ansible.builtin.fail:
+    msg: "jenkins master user '{{ jenkins_master_system_user }}' is not defined"
+  when: jenkins_master_system_user | length == 0
+
+- name: Ensure jenkins system user exist
+  ansible.builtin.user:
+    name: "{{ jenkins_master_system_user }}"
+    createhome: yes
+    home: "{{ jenkins_master_location }}"
+
+- name: Ensure folders exist
+  become: true
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ jenkins_master_system_user }}"
+    group: "{{ jenkins_master_system_user }}"
+    mode: 0664
+  loop:
+    - "{{ jenkins_master_location_init }}"
+    - "{{ jenkins_master_location_env }}"
+
+- name: Copy Jenkins master docker releated files
+  become: true
+  ansible.builtin.copy:
+    src: "init/{{ item }}"
+    dest: "{{ jenkins_master_location_init }}"
+    owner: "{{ jenkins_master_system_user }}"
+    group: "{{ jenkins_master_system_user }}"
+    mode: +x
+  loop:
+    - entrypoint_init.sh
+  notify: Restart containers
+
+- name: Copy Jenkins master docker releated files
+  become: true
+  ansible.builtin.copy:
+    src: "init/{{ item }}"
+    dest: "{{ jenkins_master_location_init }}"
+    owner: "{{ jenkins_master_system_user }}"
+    group: "{{ jenkins_master_system_user }}"
+    mode: +x
+  loop:
+    - plugins.txt
+  notify: Restart containers
+  when: jenkins_master_fresh | bool
+
+- name: Generate Jenkins configuration files from template files
+  become: true
+  ansible.builtin.template:
+    src: "jcasc/{{ item }}.j2"
+    dest: "{{ jenkins_master_location_init }}/{{ item }}"
+    mode: '0664'
+    owner: "{{ jenkins_master_system_user }}"
+    group: "{{ jenkins_master_system_user }}"
+  loop:
+    - jenkins.yml
+    - node.yml
+#    - multi-nodes.yml
+    - credentials.yml
+    - tool.yml
+    - unclassifed.yml
+  notify: Restart containers
+
+- name: Generate jenkins env file from template
+  become: true
+  ansible.builtin.template:
+    src: "jenkins.env.j2"
+    dest: "{{ jenkins_master_location_env }}/jenkins.env"
+    mode: 0664
+  notify: Restart containers
+
+- name: Generate docker compose file from template
+  become: true
+  ansible.builtin.template:
+    src: "docker-compose.yml.j2"
+    dest: "/home/jenkins/docker-compose.yml"
+    mode: '0664'
+    owner: "{{ jenkins_master_system_user }}"
+    group: "{{ jenkins_master_system_user }}"
+
+- name: Start up Jenkins master services
+  become: true
+  ansible.builtin.command: docker-compose up -d
+  args:
+    chdir: "{{ jenkins_master_location }}"
+  register: _jenkins_result
+  changed_when: (_jenkins_result.stderr | regex_search('Recreating')) == 'Recreating'
+
+# Backup tasks
+- name: Ensure Backup folders exist
+  become: true
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ jenkins_master_system_user }}"
+    group: "{{ jenkins_master_system_user }}"
+    mode: 0664
+  loop:
+    - "{{ jenkins_master_backup_location }}"
+
+- name: Ensure Backup scripts are in place
+  become: true
+  ansible.builtin.copy:
+    src: "backup/{{ item }}"
+    dest: "{{ jenkins_master_location }}"
+    owner: root
+    group: root
+    mode: +x
+  loop:
+    - backup-jenkins.sh
+    - restore-jenkins-jobs.sh
+
+- name: Ensure cron job runs ones a day
+  become: true
+  ansible.builtin.cron:
+    name: "backup jenkins jobs folder"
+    user: "root"
+    weekday: "*"
+    minute: "3"
+    hour: "*"
+    job: "/bin/bash -1 -c '{{ jenkins_master_location }}/backup-jenkins.sh' > /dev/null 2>&1"
+
+# Script for Update Jenkins plugins
+- name: Ensure Jenkins update script are inplace
+  become: true
+  ansible.builtin.copy:
+    src: "update-plugins.sh"
+    dest: "{{ jenkins_master_location }}/update-plugins.sh"
+    mode: +x
+
+- name: Check for available Jenkins Plugin updates 
+  become: true
+  ansible.builtin.cron:
+    name: "Update Jenkins plugins"
+    weekday: "0"
+    minute: "0"
+    hour: "0"
+    job: "/bin/bash -l -c '{{ jenkins_master_location }}/update-plugins.sh' >> /var/log/jenkins_plugin.log 2>&1"
+
+- name: Setup Jenkins Agent local
+  ansible.builtin.include_tasks: jenkins-agent/jenkins-agent.yml
+
+- name: Trigger pending handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: Generate Caddyfile exist on system
+  become: true
+  ansible.builtin.template:
+    src: "caddy/Caddyfile.j2"
+    dest: "/home/jenkins/Caddyfile"
+    mode: '0664'
+    owner: "{{ jenkins_master_system_user }}"
+    group: "{{ jenkins_master_system_user }}"
+  when: jenkins_master_caddy | bool
+
+- name: Check status code for jenkins master
+  ansible.builtin.uri:
+    url: "http://{{ jenkins_master_url if jenkins_master_url else _jenkins_master_url }}/login"
+    status_code: 200
+  register: result
+  until: result.status == 200
+  retries: 10
+  delay: 5
+
+
+

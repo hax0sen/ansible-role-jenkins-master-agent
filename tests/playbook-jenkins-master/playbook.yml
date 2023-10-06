@@ -1,0 +1,12 @@
+---
+- name: Setup jenkins master with local Jenkins
+  gather_facts: true
+  hosts: <server>
+  become: true
+  roles:
+  # Ensure docker is installed
+    - haxorof.docker_ce
+  # Ensure Java is installed
+    - ansible-role-openjdk
+  # Install and configure Jenkins Master
+    - ansible-role-jenkins-master-agent

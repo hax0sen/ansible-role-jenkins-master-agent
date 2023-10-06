@@ -1,0 +1,68 @@
+---
+- name: Install java
+  ansible.builtin.include_role:
+    name: roles/ansible-role-openjdk
+  vars:
+    openjdk_relase: "{{ item.release }}" 
+  loop: "{{ jenkins_agent_java }}"
+
+- name: Change file ownership, group and permissions
+  become: true
+  ansible.builtin.file:
+    path: /opt/java
+    recurse: yes
+    mode: '0755'
+
+- name: Ensure Jenkins master public key is configured on Agent
+  become: yes
+  ansible.posix.authorized_key:
+    user: jenkins
+    key: "{{ jenkins_agent_master_ssh_public_key }}"
+    state: present
+    exclusive: yes
+    manage_dir: yes
+
+- name: Ensure Jenkins gituser private key is configured on Agent
+  become: yes
+  ansible.builtin.copy:
+    content: "{{ jenkins_agent_master_ssh_private_key }}"
+    dest: /home/jenkins/.ssh/id_rsa
+    owner: jenkins
+    group: jenkins
+    mode: 0600
+
+- name: Ensure /var/shared folder exist
+  become: true
+  ansible.builtin.file:
+    path: "/var/shared"
+    state: directory
+    mode: 0775
+    owner: jenkins
+    group: jenkins
+
+- name: Ensure Jenkins Agent services script are in place
+  become: yes
+  ansible.builtin.template:
+    src: "jenkins-agent/jenkins-agent.sh.j2"
+    dest: "/var/shared/jenkins-agent.sh"
+    owner: jenkins
+    group: jenkins
+    mode: +x
+  notify: Restart jenkins_agent
+
+- name: Create systemd services for Jenkins agent
+  become: true
+  ansible.builtin.template:
+    src: jenkins-agent/jenkins_agent.service.j2
+    dest: "/etc/systemd/system/jenkins_agent.service"
+    owner: jenkins
+    group: jenkins
+    mode: 0664
+  notify: Restart jenkins_agent
+
+- name: Ensure Jenkins agent is enabled on boot
+  become: yes
+  ansible.builtin.systemd:
+    name: jenkins_agent
+    enabled: yes
+    daemon_reload: true 

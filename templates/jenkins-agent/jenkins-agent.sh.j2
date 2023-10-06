@@ -1,0 +1,7 @@
+#!/bin/bash
+cd /var/shared
+curl -sO http://{{ jenkins_master_url if jenkins_master_url else _jenkins_master_url }}/jnlpJars/agent.jar
+curl -u admin:{{ jenkins_master_password }} -o agent.jnlp http://{{ jenkins_master_url if jenkins_master_url else _jenkins_master_url }}/computer/local/slave-agent.jnlp
+SECRET=$(grep -oP '<argument>\K[^<]+' agent.jnlp | head -n 1)
+/opt/java/17/jdk-17.0.8.1-1/jdk-17.0.8.1+1/bin/java -jar agent.jar -jnlpUrl  http://{{ jenkins_master_url if jenkins_master_url else _jenkins_master_url }}/computer/local/jenkins-agent.jnlp -secret "$SECRET" -workDir "/var/shared"
+exit 0 
