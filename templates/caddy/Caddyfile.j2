@@ -3,11 +3,11 @@
 }
 
 # HTTP site block
-{{ jenkins_master_url }}:80 {
+{{ jenkins_master_url if jenkins_master_url else _jenkins_master_url }}:80 {
   reverse_proxy jenkins:8080
 }
 # HTTPS site block
-{{ jenkins_master_url }}:443 {
+{{ jenkins_master_url if jenkins_master_url else _jenkins_master_url }}:443 {
   tls internal
   reverse_proxy jenkins:8080
 }
