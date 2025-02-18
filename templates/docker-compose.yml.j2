@@ -2,10 +2,7 @@ version: "3.8"
 services:
   jenkins:
     image: jenkins/{{ jenkins_master_version }}
-    hostname: jenkins
-    container_name: jenkins
     restart: unless-stopped
-    privileged: true 
     ports:
       - "8080:8080"
     env_file: env/jenkins.env
@@ -20,10 +17,7 @@ services:
 {% if jenkins_master_caddy == true %}
   caddy:
     image: caddy:latest
-    hostname: caddy
-    container_name: caddy
     restart: unless-stopped
-    privileged: true 
     ports:
       - "80:80" # For HTTP -> HTTPS redirects
       - "443:443"
